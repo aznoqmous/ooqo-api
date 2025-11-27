@@ -3,7 +3,7 @@ import cors from "cors"
 import {PrismaClient} from "@prisma/client"
 
 const app = express()
-const port = 3000
+const port = process.env.PORT
 const prisma = new PrismaClient()
 
 app.use(cors());
@@ -32,21 +32,27 @@ app.post("/run", async(req,res)=>{
         skip: 9,
         take: 1
     })
-    if(!lastResult){
-        await prisma.Run.create({
-            data
-        })
-    }
-    else if(lastResult.Score < data.Score){
-        await prisma.Run.delete({
-            where: {
-                id: lastResult.id
-            }
-        })
-        await prisma.Run.create({
-            data
-        })
-    }
+
+    await prisma.Run.create({
+        data
+    })
+
+    // Limit runs to 10
+    // if(!lastResult){
+    //     await prisma.Run.create({
+    //         data
+    //     })
+    // }
+    // else if(lastResult.Score < data.Score){
+    //     await prisma.Run.delete({
+    //         where: {
+    //             id: lastResult.id
+    //         }
+    //     })
+    //     await prisma.Run.create({
+    //         data
+    //     })
+    // }
     res.send(true)
 })
 
@@ -54,9 +60,15 @@ app.get("/leaderboard", async(req,res)=>{
     const Runs = await prisma.Run.findMany({
         orderBy: {
             Score: "desc"
-        }
+        },
+        take: 10
     })
     res.send({Runs})
+})
+
+app.get("/count", async(req,res)=>{
+    const count = await prisma.Run.count()
+    res.send({count})
 })
 
 app.listen(port, ()=>{
