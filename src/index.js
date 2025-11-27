@@ -33,9 +33,9 @@ app.post("/run", async(req,res)=>{
         take: 1
     })
 
-    await prisma.Run.create({
+    res.send(await prisma.Run.create({
         data
-    })
+    }))
 
     // Limit runs to 10
     // if(!lastResult){
@@ -53,7 +53,6 @@ app.post("/run", async(req,res)=>{
     //         data
     //     })
     // }
-    res.send(true)
 })
 
 app.get("/leaderboard", async(req,res)=>{
